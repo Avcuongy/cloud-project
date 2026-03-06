@@ -1,0 +1,424 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html,
+body {
+	height: 100%;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	color: #1f2933;
+	background-color: #f5f7fa;
+}
+
+body {
+	display: flex;
+	justify-content: center;
+	align-items: stretch;
+}
+
+.app-shell {
+	background-color: #ffffff;
+	width: 100%;
+	max-width: 1200px;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.app-header {
+	padding: 16px 24px;
+	border-bottom: 1px solid #e5e7eb;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 16px;
+}
+
+.brand-title {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.brand-subtitle {
+	display: block;
+	font-size: 12px;
+	color: #6b7280;
+}
+
+.app-nav {
+	display: flex;
+	gap: 8px;
+}
+
+.nav-link {
+	border: none;
+	padding: 8px 14px;
+	border-radius: 999px;
+	background-color: #f3f4f6;
+	color: #374151;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link.active {
+	background-color: #2563eb;
+	color: #ffffff;
+}
+
+.nav-link:hover:not(.active) {
+	background-color: #e5e7eb;
+}
+
+.app-main {
+	flex: 1;
+	padding: 20px 24px 16px;
+	display: flex;
+}
+
+.view {
+	display: none;
+	width: 100%;
+}
+
+.active-view {
+	display: block;
+}
+
+.panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.panel-title-group h1 {
+	font-size: 22px;
+	margin-bottom: 4px;
+}
+
+.panel-description {
+	font-size: 13px;
+	color: #6b7280;
+}
+
+.panel-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.search-group input {
+	width: 260px;
+	max-width: 100%;
+	padding: 8px 10px;
+	border-radius: 999px;
+	border: 1px solid #d1d5db;
+	font-size: 13px;
+}
+
+.search-group input:focus {
+	outline: none;
+	border-color: #2563eb;
+	box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.table-container {
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	overflow: hidden;
+	background-color: #ffffff;
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.data-table thead {
+	background-color: #f9fafb;
+}
+
+.data-table th,
+.data-table td {
+	padding: 10px 12px;
+	border-bottom: 1px solid #f3f4f6;
+	text-align: left;
+}
+
+.data-table th {
+	font-weight: 500;
+	color: #4b5563;
+}
+
+.data-table tbody tr:hover {
+	background-color: #f9fafb;
+}
+
+.col-checkbox {
+	width: 40px;
+}
+
+.col-actions {
+	width: 130px;
+}
+
+.btn {
+	border-radius: 999px;
+	border: none;
+	padding: 8px 14px;
+	font-size: 13px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn.primary {
+	background-color: #2563eb;
+	color: #ffffff;
+}
+
+.btn.primary:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.btn.secondary {
+	background-color: #f3f4f6;
+	color: #111827;
+}
+
+.btn:hover:not(:disabled).primary {
+	background-color: #1d4ed8;
+}
+
+.btn:hover:not(:disabled).secondary {
+	background-color: #e5e7eb;
+}
+
+.btn-ghost {
+	border-radius: 999px;
+	border: none;
+	background: transparent;
+	color: #4b5563;
+	font-size: 12px;
+	padding: 4px 8px;
+	cursor: pointer;
+}
+
+.btn-ghost:hover {
+	background-color: #f3f4f6;
+}
+
+.empty-state {
+	padding: 24px;
+	text-align: center;
+	font-size: 13px;
+	color: #6b7280;
+}
+
+.hidden {
+	display: none !important;
+}
+
+.composer-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr);
+	gap: 24px;
+}
+
+.composer-select h2 {
+	font-size: 16px;
+	margin-bottom: 8px;
+}
+
+.pill-list {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.pill {
+	border-radius: 999px;
+	padding: 4px 10px;
+	background-color: #f3f4f6;
+	font-size: 12px;
+}
+
+.muted {
+	font-size: 12px;
+	color: #9ca3af;
+}
+
+.composer-form {
+	border-radius: 12px;
+	border: 1px solid #e5e7eb;
+	padding: 16px 18px 18px;
+	background-color: #ffffff;
+}
+
+.field-label {
+	display: block;
+	font-size: 12px;
+	font-weight: 500;
+	color: #4b5563;
+	margin: 8px 0 4px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+textarea {
+	width: 100%;
+	padding: 8px 10px;
+	border-radius: 8px;
+	border: 1px solid #d1d5db;
+	font-size: 13px;
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+	outline: none;
+	border-color: #2563eb;
+	box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+textarea {
+	resize: vertical;
+}
+
+.toggle-group {
+	display: inline-flex;
+	padding: 2px;
+	border-radius: 999px;
+	background-color: #f3f4f6;
+	margin-bottom: 4px;
+}
+
+.toggle-btn {
+	border-radius: 999px;
+	padding: 6px 14px;
+	border: none;
+	background: transparent;
+	font-size: 13px;
+	cursor: pointer;
+	color: #4b5563;
+}
+
+.toggle-btn.active {
+	background-color: #ffffff;
+	color: #111827;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.form-actions {
+	margin-top: 12px;
+	text-align: right;
+}
+
+.app-footer {
+	padding: 8px 24px 10px;
+	border-top: 1px solid #e5e7eb;
+	font-size: 12px;
+	color: #9ca3af;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(15, 23, 42, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 40;
+}
+
+.modal {
+	width: 100%;
+	max-width: 480px;
+	background-color: #ffffff;
+	border-radius: 16px;
+	box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+	overflow: hidden;
+}
+
+.modal-header {
+	padding: 14px 18px;
+	border-bottom: 1px solid #e5e7eb;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.modal-body {
+	padding: 14px 18px 4px;
+}
+
+.modal-footer {
+	padding: 10px 18px 14px;
+	border-top: 1px solid #e5e7eb;
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.icon-button {
+	border: none;
+	background: transparent;
+	font-size: 20px;
+	cursor: pointer;
+	color: #6b7280;
+}
+
+.icon-button:hover {
+	color: #111827;
+}
+
+.toast {
+	position: fixed;
+	bottom: 16px;
+	right: 16px;
+	background-color: #111827;
+	color: #f9fafb;
+	padding: 10px 14px;
+	border-radius: 999px;
+	font-size: 13px;
+	box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45);
+	z-index: 50;
+}
+
+@media (max-width: 768px) {
+	.app-shell {
+		max-width: 100%;
+		border-radius: 0;
+	}
+
+	.app-header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.composer-layout {
+		grid-template-columns: 1fr;
+	}
+}

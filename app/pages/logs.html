@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Communication Logs - Customer Cloud Console</title>
+	<link rel="stylesheet" href="../styles/static.css" />
+</head>
+<body data-page="logs">
+	<div class="app-shell">
+		<header class="app-header">
+			<div class="brand">
+				<span class="brand-title">Customer Cloud Console</span>
+				<span class="brand-subtitle">Contacts • Email • SMS</span>
+			</div>
+			<nav class="app-nav">
+				<a class="nav-link" data-view="dashboard" href="dashboard.html">Dashboard</a>
+				<a class="nav-link" data-view="composer" href="composer.html">Message Composer</a>
+				<a class="nav-link" data-view="logs" href="logs.html">Communication Logs</a>
+			</nav>
+		</header>
+
+		<main class="app-main">
+			<section class="view active-view">
+				<div class="panel-header">
+					<div class="panel-title-group">
+						<h1>Communication Logs</h1>
+						<p class="panel-description">Track message history and delivery status for monitoring and auditing.</p>
+					</div>
+				</div>
+
+				<div class="table-container">
+					<table class="data-table" id="logs-table">
+						<thead>
+							<tr>
+								<th>Customer</th>
+								<th>Type</th>
+								<th>Status</th>
+								<th>Message ID</th>
+								<th>Sent At</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+					<div id="logs-empty" class="empty-state hidden">
+						<p>No communication logs yet. Send a message to see tracking information here.</p>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="app-footer">
+			<span>AWS Cloud Project &mdash; Demo UI</span>
+		</footer>
+	</div>
+
+	<div id="toast" class="toast hidden"></div>
+
+	<script src="../scripts/common.js"></script>
+	<script src="../scripts/logs.js"></script>
+</body>
+</html>
+
