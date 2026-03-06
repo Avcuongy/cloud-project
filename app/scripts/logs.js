@@ -5,11 +5,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const logsEmpty = document.getElementById("logs-empty");
   if (!logsTableBody) return;
 
-  const logs = loadLogs();
-  logsTableBody.innerHTML = "";
+  let logs = [];
 
-  logs.forEach((log) => {
-    const row = document.createElement("tr");
+  async function loadLogsFromApi() {
+    try {
+      logs = await apiGet("/api/logs");
+      renderLogs();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load logs");
+    }
+  }
+
+  function renderLogs() {
+    logsTableBody.innerHTML = "";
+
+    logs.forEach((log) => {
+      const row = document.createElement("tr");
 
     const colCustomer = document.createElement("td");
     colCustomer.textContent = log.customerName;
@@ -27,12 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
     colMessageId.textContent = log.messageId;
     row.appendChild(colMessageId);
 
-    const colSentAt = document.createElement("td");
-    colSentAt.textContent = new Date(log.sentAt).toLocaleString();
-    row.appendChild(colSentAt);
+      const colSentAt = document.createElement("td");
+      colSentAt.textContent = new Date(log.sentAt).toLocaleString();
+      row.appendChild(colSentAt);
 
-    logsTableBody.appendChild(row);
-  });
+      logsTableBody.appendChild(row);
+    });
 
-  logsEmpty.classList.toggle("hidden", logs.length > 0);
+    logsEmpty.classList.toggle("hidden", logs.length > 0);
+  }
+
+  loadLogsFromApi();
 });

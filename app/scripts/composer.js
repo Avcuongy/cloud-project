@@ -11,10 +11,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!composerSelectedList || !deliveryToggle) return;
 
-  const customers = loadCustomers();
+  let customers = [];
   const selectedIds = new Set(loadSelection());
 
-  function renderComposerSelection() {
+  async function ensureCustomersLoaded() {
+    if (customers.length) return;
+    try {
+      customers = await apiGet("/api/customers");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load customers");
+    }
+  }
+
+  async function renderComposerSelection() {
+    await ensureCustomersLoaded();
     composerSelectedList.innerHTML = "";
     const selectedCustomers = customers.filter((c) => selectedIds.has(c.id));
 
@@ -45,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     deliveryToggle.dataset.activeType = type;
   });
 
-  btnSendNow.addEventListener("click", () => {
+  btnSendNow.addEventListener("click", async () => {
     const type = deliveryToggle.dataset.activeType || "EMAIL";
     const message = composerMessage.value.trim();
     if (!message) return;
@@ -53,23 +64,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedCustomers = customers.filter((c) => selectedIds.has(c.id));
     if (!selectedCustomers.length) return;
 
-    const logs = loadLogs();
-    selectedCustomers.forEach((c) => {
-      logs.push({
-        customerId: c.id,
-        customerName: c.fullName,
+    try {
+      await apiSend("/api/logs", "POST", {
+        customerIds: selectedCustomers.map((c) => c.id),
         type,
-        status: "Success",
-        messageId: `${type}-${Date.now()}-${c.id}`,
-        sentAt: new Date().toISOString(),
+        message,
       });
-    });
-    saveLogs(logs);
-
-    composerMessage.value = "";
-    btnSendNow.disabled = true;
-    showToast(`Sent ${type} to ${selectedCustomers.length} customer(s)`);
-    window.location.href = "logs.html";
+      composerMessage.value = "";
+      btnSendNow.disabled = true;
+      showToast(
+        `Sent ${type} to ${selectedCustomers.length} customer(s)`,
+      );
+      window.location.href = "logs.html";
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to send messages");
+    }
   });
 
   renderComposerSelection();

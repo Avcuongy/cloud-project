@@ -22,8 +22,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!customersTableBody || !btnAddCustomer) return;
 
-  let customers = loadCustomers();
+  let customers = [];
   let selectedIds = new Set(loadSelection());
+
+  async function loadCustomersFromApi() {
+    try {
+      customers = await apiGet("/api/customers");
+      renderCustomers();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load customers");
+    }
+  }
 
   function openCustomerModal(mode, customer) {
     modalTitle.textContent = mode === "edit" ? "Edit Customer" : "Add Customer";
@@ -151,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  modalSave.addEventListener("click", (e) => {
+  modalSave.addEventListener("click", async (e) => {
     e.preventDefault();
     if (!fullNameField.value.trim()) {
       fullNameField.focus();
@@ -168,24 +178,20 @@ document.addEventListener("DOMContentLoaded", () => {
       email: emailField.value.trim(),
     };
 
-    if (existingId) {
-      customers = customers.map((c) =>
-        c.id === existingId ? { ...c, ...data } : c,
-      );
-      showToast("Customer updated");
-    } else {
-      const maxId = customers.reduce((max, c) => (c.id > max ? c.id : max), 0);
-      customers.push({
-        id: maxId + 1,
-        createdAt: new Date().toISOString(),
-        ...data,
-      });
-      showToast("Customer added");
+    try {
+      if (existingId) {
+        await apiSend(`/api/customers/${existingId}`, "PUT", data);
+        showToast("Customer updated");
+      } else {
+        await apiSend("/api/customers", "POST", data);
+        showToast("Customer added");
+      }
+      closeCustomerModal();
+      await loadCustomersFromApi();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to save customer");
     }
-
-    saveCustomers(customers);
-    closeCustomerModal();
-    renderCustomers();
   });
 
   btnSendSelected.addEventListener("click", () => {
@@ -193,5 +199,5 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "composer.html";
   });
 
-  renderCustomers();
+  loadCustomersFromApi();
 });

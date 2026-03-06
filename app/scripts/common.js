@@ -1,7 +1,5 @@
 // Shared helpers for all pages
 const STORAGE_KEYS = {
-  customers: "cloud_customers",
-  logs: "cloud_logs",
   selection: "cloud_selected_ids",
 };
 
@@ -15,53 +13,31 @@ function showToast(message) {
   }, 2200);
 }
 
-function loadCustomers() {
-  const raw = localStorage.getItem(STORAGE_KEYS.customers);
-  if (raw) {
+async function apiGet(path) {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    throw new Error(`Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiSend(path, method, body) {
+  const res = await fetch(path, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body ?? {}),
+  });
+  if (!res.ok) {
+    let message = `Request failed: ${res.status}`;
     try {
-      return JSON.parse(raw);
-    } catch {
-      // ignore and reseed
-    }
+      const data = await res.json();
+      if (data && data.error) message = data.error;
+    } catch {}
+    throw new Error(message);
   }
-  const seed = [
-    {
-      id: 1,
-      fullName: "Nguyen Van A",
-      address: "Ho Chi Minh City",
-      phone: "+84 901 234 567",
-      email: "nguyenvana@example.com",
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      fullName: "Tran Thi B",
-      address: "Ha Noi",
-      phone: "+84 912 345 678",
-      email: "tranthib@example.com",
-      createdAt: new Date().toISOString(),
-    },
-  ];
-  localStorage.setItem(STORAGE_KEYS.customers, JSON.stringify(seed));
-  return seed;
-}
-
-function saveCustomers(customers) {
-  localStorage.setItem(STORAGE_KEYS.customers, JSON.stringify(customers));
-}
-
-function loadLogs() {
-  const raw = localStorage.getItem(STORAGE_KEYS.logs);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function saveLogs(logs) {
-  localStorage.setItem(STORAGE_KEYS.logs, JSON.stringify(logs));
+  return res.json().catch(() => ({}));
 }
 
 function loadSelection() {
