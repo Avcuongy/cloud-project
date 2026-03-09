@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btnSendSelected.addEventListener("click", () => {
     saveSelection(Array.from(selectedIds));
-    window.location.href = "composer.html";
+    window.location.href = "/composer";
   });
 
   loadCustomersFromApi();

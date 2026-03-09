@@ -23,21 +23,21 @@ document.addEventListener("DOMContentLoaded", () => {
     logs.forEach((log) => {
       const row = document.createElement("tr");
 
-    const colCustomer = document.createElement("td");
-    colCustomer.textContent = log.customerName;
-    row.appendChild(colCustomer);
+      const colCustomer = document.createElement("td");
+      colCustomer.textContent = log.customerName;
+      row.appendChild(colCustomer);
 
-    const colType = document.createElement("td");
-    colType.textContent = log.type;
-    row.appendChild(colType);
+      const colType = document.createElement("td");
+      colType.textContent = log.type;
+      row.appendChild(colType);
 
-    const colStatus = document.createElement("td");
-    colStatus.textContent = log.status;
-    row.appendChild(colStatus);
+      const colStatus = document.createElement("td");
+      colStatus.textContent = log.status;
+      row.appendChild(colStatus);
 
-    const colMessageId = document.createElement("td");
-    colMessageId.textContent = log.messageId;
-    row.appendChild(colMessageId);
+      const colMessageId = document.createElement("td");
+      colMessageId.textContent = log.messageId;
+      row.appendChild(colMessageId);
 
       const colSentAt = document.createElement("td");
       colSentAt.textContent = new Date(log.sentAt).toLocaleString();

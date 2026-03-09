@@ -11,13 +11,13 @@
       <header class="app-header">
         <div class="brand"></div>
         <nav class="app-nav">
-          <a class="nav-link" data-view="dashboard" href="dashboard.html"
+          <a class="nav-link" data-view="dashboard" href="/dashboard"
             >Dashboard</a
           >
-          <a class="nav-link" data-view="composer" href="composer.html"
+          <a class="nav-link" data-view="composer" href="/composer"
             >Message Composer</a
           >
-          <a class="nav-link" data-view="logs" href="logs.html"
+          <a class="nav-link" data-view="logs" href="/logs"
             >Communication Logs</a
           >
         </nav>
@@ -29,7 +29,7 @@
             <div class="panel-title-group">
               <h1>Message Composer</h1>
               <p class="panel-description">
-                Send a message to one or multiple customers via Email or SMS.
+                Send a message to customers via Email or SMS.
               </p>
             </div>
           </div>
@@ -38,10 +38,7 @@
             <div class="composer-select">
               <h2>Selected Customers</h2>
               <ul id="composer-selected-list" class="pill-list"></ul>
-              <p class="muted" id="composer-hint">
-                Select customers on the Dashboard and click "Send Email/SMS to
-                Selected".
-              </p>
+              <p class="muted" id="composer-hint">None</p>
             </div>
             <div class="composer-form">
               <label class="field-label">Method</label>

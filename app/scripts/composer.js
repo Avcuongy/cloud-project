@@ -72,10 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       composerMessage.value = "";
       btnSendNow.disabled = true;
-      showToast(
-        `Sent ${type} to ${selectedCustomers.length} customer(s)`,
-      );
-      window.location.href = "logs.html";
+      showToast(`Sent ${type} to ${selectedCustomers.length} customer(s)`);
+      window.location.href = "/logs";
     } catch (err) {
       console.error(err);
       showToast("Failed to send messages");

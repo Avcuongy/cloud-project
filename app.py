@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 from flask import (
     Flask,
     jsonify,
@@ -27,12 +29,21 @@ def create_app() -> Flask:
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
         # Fallback to local MySQL on default port; adjust via env when deploying
-        db_url = "mysql+pymysql://user:password@localhost/manager"
+        db_url = "mysql+pymysql://guest:guest@localhost/customer_manager"
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db = SQLAlchemy(app)
+
+    # --- AWS clients (optional; used when configured) ---
+
+    aws_region = os.getenv("AWS_REGION", "us-east-1")
+    ses_sender = os.getenv("SES_SENDER_EMAIL")
+    sns_sender_id = os.getenv("SNS_SENDER_ID", "CloudApp")
+
+    ses_client = boto3.client("ses", region_name=aws_region)
+    sns_client = boto3.client("sns", region_name=aws_region)
 
     class Customer(db.Model):  # type: ignore[misc]
         __tablename__ = "CUSTOMERS"
@@ -168,24 +179,79 @@ def create_app() -> Flask:
         payload = request.get_json(force=True) or {}
         customer_ids = payload.get("customerIds") or []
         message_type = (payload.get("type") or "EMAIL").upper()
+        message_body = (payload.get("message") or "").strip()
         if message_type not in {"SMS", "EMAIL"}:
             return jsonify({"error": "type must be SMS or EMAIL"}), 400
+
+        if not message_body:
+            return jsonify({"error": "message is required"}), 400
 
         if not isinstance(customer_ids, list) or not customer_ids:
             return jsonify({"error": "customerIds must be a non-empty list"}), 400
 
         created_logs = []
         now = datetime.utcnow()
+
+        def send_email(customer: Customer) -> tuple[str, str]:
+            """Send email via AWS SES. Returns (status, message_id)."""
+            if not ses_sender or not customer.email_address:
+                # Fallback: pretend success when SES or email is not configured
+                fake_id = f"EMAIL-{int(now.timestamp())}-{customer.customer_id}"
+                return "Success", fake_id
+
+            try:
+                response = ses_client.send_email(
+                    Source=ses_sender,
+                    Destination={"ToAddresses": [customer.email_address]},
+                    Message={
+                        "Subject": {"Data": "Customer Notification"},
+                        "Body": {"Text": {"Data": message_body}},
+                    },
+                )
+                message_id = response.get("MessageId", "")
+                return "Success", message_id or "SES_UNKNOWN_ID"
+            except (BotoCoreError, ClientError) as exc:  # pragma: no cover - external
+                app.logger.exception("Failed to send email via SES", exc_info=exc)
+                return "Failed", "SES_ERROR"
+
+        def send_sms(customer: Customer) -> tuple[str, str]:
+            """Send SMS via AWS SNS. Returns (status, message_id)."""
+            if not customer.phone_number:
+                fake_id = f"SMS-{int(now.timestamp())}-{customer.customer_id}"
+                return "Failed", fake_id
+
+            try:
+                attributes = {
+                    "AWS.SNS.SMS.SenderID": {
+                        "DataType": "String",
+                        "StringValue": sns_sender_id,
+                    },
+                }
+                response = sns_client.publish(
+                    PhoneNumber=customer.phone_number,
+                    Message=message_body,
+                    MessageAttributes=attributes,
+                )
+                message_id = response.get("MessageId", "")
+                return "Success", message_id or "SNS_UNKNOWN_ID"
+            except (BotoCoreError, ClientError) as exc:  # pragma: no cover - external
+                app.logger.exception("Failed to send SMS via SNS", exc_info=exc)
+                return "Failed", "SNS_ERROR"
+
         for cid in customer_ids:
             customer = Customer.query.get(cid)
             if not customer:
                 continue
-            # In a real integration, you would call AWS SES/SNS here and get message_id
-            message_id = f"{message_type}-{int(now.timestamp())}-{cid}"
+
+            if message_type == "EMAIL":
+                status, message_id = send_email(customer)
+            else:  # SMS
+                status, message_id = send_sms(customer)
+
             log = CommunicationLog(
                 customer_id=customer.customer_id,
                 type=message_type,
-                status="Success",
+                status=status,
                 message_id=message_id,
                 sent_at=now,
             )
