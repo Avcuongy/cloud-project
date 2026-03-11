@@ -9,7 +9,9 @@
   <body data-page="dashboard">
     <div class="app-shell">
       <header class="app-header">
-        <div class="brand"></div>
+        <div class="brand">
+          <img src="/assets/ueh.png" alt="UEH logo" class="brand-logo" />
+        </div>
         <nav class="app-nav">
           <a class="nav-link" data-view="dashboard" href="/dashboard"
             >Dashboard</a
@@ -17,9 +19,7 @@
           <a class="nav-link" data-view="composer" href="/composer"
             >Message Composer</a
           >
-          <a class="nav-link" data-view="logs" href="/logs"
-            >Communication Logs</a
-          >
+          <a class="nav-link" data-view="logs" href="/logs">Logs</a>
         </nav>
       </header>
 
@@ -28,27 +28,21 @@
           <div class="panel-header">
             <div class="panel-title-group">
               <h1>Customers</h1>
-              <p class="panel-description">
-                Manage your contact list and send targeted messages.
-              </p>
+              <p class="panel-description">Quản lý khách hàng của bạn.</p>
             </div>
             <div class="panel-actions">
               <button id="btn-add-customer" class="btn primary">
-                Add Customer
+                Thêm khách hàng
               </button>
               <button id="btn-send-selected" class="btn secondary" disabled>
-                Send Email/SMS
+                Gửi Email/SMS
               </button>
             </div>
           </div>
 
           <div class="toolbar">
             <div class="search-group">
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Search by name, phone, or email"
-              />
+              <input id="search-input" type="text" placeholder="Tìm kiếm" />
             </div>
           </div>
 
@@ -59,9 +53,9 @@
                   <th class="col-checkbox">
                     <input type="checkbox" id="select-all" />
                   </th>
-                  <th>Full Name</th>
-                  <th>Address</th>
-                  <th>Phone</th>
+                  <th>Họ Tên</th>
+                  <th>Địa chỉ</th>
+                  <th>Số điện thoại</th>
                   <th>Email</th>
                   <th class="col-actions">Actions</th>
                 </tr>
@@ -69,10 +63,7 @@
               <tbody></tbody>
             </table>
             <div id="customers-empty" class="empty-state hidden">
-              <p>
-                No customers yet. Use "Add Customer" to create your first
-                record.
-              </p>
+              <p>Không có khách hàng nào. Nhấn "Thêm khách hàng" để bắt đầu.</p>
             </div>
           </div>
         </section>
@@ -83,7 +74,7 @@
     <div id="customer-modal-backdrop" class="modal-backdrop hidden">
       <div class="modal">
         <div class="modal-header">
-          <h2 id="customer-modal-title">Add Customer</h2>
+          <h2 id="customer-modal-title">Thêm Khách Hàng</h2>
           <button
             id="customer-modal-close"
             class="icon-button"
@@ -95,24 +86,22 @@
         <div class="modal-body">
           <form id="customer-form">
             <input type="hidden" id="customer-id" />
-            <label class="field-label" for="full-name">Full Name</label>
+            <label class="field-label" for="full-name">Họ Tên</label>
             <input id="full-name" type="text" required />
 
-            <label class="field-label" for="address">Address</label>
+            <label class="field-label" for="address">Địa chỉ</label>
             <input id="address" type="text" />
 
-            <label class="field-label" for="phone">Phone Number</label>
+            <label class="field-label" for="phone">Số điện thoại</label>
             <input id="phone" type="tel" />
 
-            <label class="field-label" for="email">Email Address</label>
+            <label class="field-label" for="email">Email</label>
             <input id="email" type="email" />
           </form>
         </div>
         <div class="modal-footer">
-          <button id="customer-modal-cancel" class="btn secondary">
-            Cancel
-          </button>
-          <button id="customer-modal-save" class="btn primary">Save</button>
+          <button id="customer-modal-cancel" class="btn secondary">Huỷ</button>
+          <button id="customer-modal-save" class="btn primary">Lưu</button>
         </div>
       </div>
     </div>

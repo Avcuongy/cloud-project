@@ -3,13 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Communication Logs</title>
+    <title>Logs</title>
     <link rel="stylesheet" href="/styles/static.css" />
   </head>
   <body data-page="logs">
     <div class="app-shell">
       <header class="app-header">
-        <div class="brand"></div>
+        <div class="brand">
+          <img src="/assets/ueh.png" alt="UEH logo" class="brand-logo" />
+        </div>
         <nav class="app-nav">
           <a class="nav-link" data-view="dashboard" href="/dashboard"
             >Dashboard</a
@@ -17,9 +19,7 @@
           <a class="nav-link" data-view="composer" href="/composer"
             >Message Composer</a
           >
-          <a class="nav-link" data-view="logs" href="/logs"
-            >Communication Logs</a
-          >
+          <a class="nav-link" data-view="logs" href="/logs">Logs</a>
         </nav>
       </header>
 
@@ -27,7 +27,7 @@
         <section class="view active-view">
           <div class="panel-header">
             <div class="panel-title-group">
-              <h1>Communication Logs</h1>
+              <h1>Logs</h1>
             </div>
           </div>
 
@@ -35,19 +35,19 @@
             <table class="data-table" id="logs-table">
               <thead>
                 <tr>
-                  <th>Customer</th>
-                  <th>Type</th>
-                  <th>Status</th>
+                  <th>Khách Hàng</th>
+                  <th>Loại</th>
+                  <th>Trạng Thái</th>
                   <th>Message ID</th>
-                  <th>Sent At</th>
+                  <th>Ngày Gửi</th>
                 </tr>
               </thead>
               <tbody></tbody>
             </table>
             <div id="logs-empty" class="empty-state hidden">
               <p>
-                No communication logs yet. Send a message to see tracking
-                information here.
+                Không có log nào. Gửi một tin nhắn để xem thông tin theo dõi tại
+                đây.
               </p>
             </div>
           </div>

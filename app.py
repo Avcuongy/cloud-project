@@ -29,16 +29,16 @@ def create_app() -> Flask:
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
         # Fallback to local MySQL on default port; adjust via env when deploying
-        db_url = "mysql+pymysql://guest:guest@localhost/customer_manager"
+        db_url = "mysql+pymysql://admin:12345678@database.clqawmkceblg.ap-southeast-1.rds.amazonaws.com:3306/customer_manager"
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db = SQLAlchemy(app)
 
-    # --- AWS clients (optional; used when configured) ---
+    # AWS clients (optional)
 
-    aws_region = os.getenv("AWS_REGION", "us-east-1")
+    aws_region = os.getenv("AWS_REGION", "ap-southeast-1")
     ses_sender = os.getenv("SES_SENDER_EMAIL")
     sns_sender_id = os.getenv("SNS_SENDER_ID", "CloudApp")
 
@@ -120,6 +120,10 @@ def create_app() -> Flask:
     @app.route("/styles/<path:filename>")
     def styles(filename: str):
         return send_from_directory(os.path.join("app", "styles"), filename)
+
+    @app.route("/assets/<path:filename>")
+    def assets(filename: str):
+        return send_from_directory("assets", filename)
 
     # API: Customers
 
@@ -234,7 +238,7 @@ def create_app() -> Flask:
                 )
                 message_id = response.get("MessageId", "")
                 return "Success", message_id or "SNS_UNKNOWN_ID"
-            except (BotoCoreError, ClientError) as exc:  # pragma: no cover - external
+            except (BotoCoreError, ClientError) as exc:
                 app.logger.exception("Failed to send SMS via SNS", exc_info=exc)
                 return "Failed", "SNS_ERROR"
 

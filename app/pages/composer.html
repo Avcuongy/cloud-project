@@ -9,7 +9,9 @@
   <body data-page="composer">
     <div class="app-shell">
       <header class="app-header">
-        <div class="brand"></div>
+        <div class="brand">
+          <img src="/assets/ueh.png" alt="UEH logo" class="brand-logo" />
+        </div>
         <nav class="app-nav">
           <a class="nav-link" data-view="dashboard" href="/dashboard"
             >Dashboard</a
@@ -17,9 +19,7 @@
           <a class="nav-link" data-view="composer" href="/composer"
             >Message Composer</a
           >
-          <a class="nav-link" data-view="logs" href="/logs"
-            >Communication Logs</a
-          >
+          <a class="nav-link" data-view="logs" href="/logs">Logs</a>
         </nav>
       </header>
 
@@ -29,19 +29,19 @@
             <div class="panel-title-group">
               <h1>Message Composer</h1>
               <p class="panel-description">
-                Send a message to customers via Email or SMS.
+                Gửi Email hoặc SMS đến khách hàng đã chọn.
               </p>
             </div>
           </div>
 
           <div class="composer-layout">
             <div class="composer-select">
-              <h2>Selected Customers</h2>
+              <h2>Khách Hàng Đã Chọn</h2>
               <ul id="composer-selected-list" class="pill-list"></ul>
-              <p class="muted" id="composer-hint">None</p>
+              <p class="muted" id="composer-hint">Không có khách hàng nào.</p>
             </div>
             <div class="composer-form">
-              <label class="field-label">Method</label>
+              <label class="field-label">Phương thức</label>
               <div
                 class="toggle-group"
                 id="delivery-toggle"
@@ -60,17 +60,17 @@
               </div>
 
               <label for="composer-message" class="field-label"
-                >Message Content</label
+                >Nội dung tin nhắn</label
               >
               <textarea
                 id="composer-message"
                 rows="6"
-                placeholder="Type your message here..."
+                placeholder="Nhập nội dung tin nhắn tại đây..."
               ></textarea>
 
               <div class="form-actions">
                 <button id="btn-send-now" class="btn primary" disabled>
-                  Send Now
+                  Gửi
                 </button>
               </div>
             </div>
