@@ -36,8 +36,7 @@ def create_app() -> Flask:
 
     db = SQLAlchemy(app)
 
-    # AWS clients (optional)
-
+    # AWS clients (optional)F
     aws_region = os.getenv("AWS_REGION", "ap-southeast-1")
     ses_sender = os.getenv("SES_SENDER_EMAIL")
     sns_sender_id = os.getenv("SNS_SENDER_ID", "CloudApp")
@@ -66,7 +65,7 @@ def create_app() -> Flask:
             }
 
     class CommunicationLog(db.Model):  # type: ignore[misc]
-        __tablename__ = "COMMUNICATION_LOGS"
+        __tablename__ = "LOGS"
 
         log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
         customer_id = db.Column(
@@ -112,7 +111,6 @@ def create_app() -> Flask:
         return render_template("logs.html")
 
     # Static assets (JS, CSS)
-
     @app.route("/scripts/<path:filename>")
     def scripts(filename: str):
         return send_from_directory(os.path.join("app", "scripts"), filename)
@@ -126,7 +124,6 @@ def create_app() -> Flask:
         return send_from_directory("assets", filename)
 
     # API: Customers
-
     @app.route("/api/customers", methods=["GET"])
     def list_customers():
         customers = Customer.query.order_by(Customer.created_at.desc()).all()
@@ -172,7 +169,6 @@ def create_app() -> Flask:
         return "", 204
 
     # API: Logs
-
     @app.route("/api/logs", methods=["GET"])
     def list_logs():
         logs = CommunicationLog.query.order_by(CommunicationLog.sent_at.desc()).all()
@@ -197,19 +193,31 @@ def create_app() -> Flask:
         now = datetime.utcnow()
 
         def send_email(customer: Customer) -> tuple[str, str]:
-            """Send email via AWS SES. Returns (status, message_id)."""
+            """
+            Send email via AWS SES. Returns (status, message_id).
+            Nội dung và tiêu đề được gửi với charset UTF-8
+            để hỗ trợ tiếng Việt.
+            """
             if not ses_sender or not customer.email_address:
-                # Fallback: pretend success when SES or email is not configured
+                # Fallback: mark as failed when SES or email is not configured
                 fake_id = f"EMAIL-{int(now.timestamp())}-{customer.customer_id}"
-                return "Success", fake_id
+                return "Failed", fake_id
 
             try:
                 response = ses_client.send_email(
                     Source=ses_sender,
                     Destination={"ToAddresses": [customer.email_address]},
                     Message={
-                        "Subject": {"Data": "Customer Notification"},
-                        "Body": {"Text": {"Data": message_body}},
+                        "Subject": {
+                            "Data": "Thông báo khách hàng",
+                            "Charset": "UTF-8",
+                        },
+                        "Body": {
+                            "Text": {
+                                "Data": message_body,
+                                "Charset": "UTF-8",
+                            }
+                        },
                     },
                 )
                 message_id = response.get("MessageId", "")

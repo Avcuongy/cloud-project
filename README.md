@@ -1,5 +1,7 @@
 # aws
 
+Access: http://13.213.11.214/dashboard
+
 1. Thiết lập AWS credentials (ví dụ qua biến môi trường):
 
    ```bash

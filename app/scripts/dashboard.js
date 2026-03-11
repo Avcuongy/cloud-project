@@ -36,7 +36,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openCustomerModal(mode, customer) {
-    modalTitle.textContent = mode === "edit" ? "Edit Customer" : "Add Customer";
+    // mode: "add" | "edit"
+    modalTitle.textContent =
+      mode === "edit" ? "Chỉnh Sửa Thông Tin" : "Điền Thông Tin";
     if (mode === "edit" && customer) {
       customerIdField.value = customer.id;
       fullNameField.value = customer.fullName;
