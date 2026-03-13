@@ -1,7 +1,7 @@
 ## Domain
 
 - Local: [link](http://127.0.0.1:5000/)
-- Server: [Link](http://13.213.11.214/)
+- Public: [Link](http://13.213.11.214/)
 
 ## Sender Email
 
