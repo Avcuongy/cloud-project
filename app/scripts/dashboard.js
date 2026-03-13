@@ -117,13 +117,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "btn-ghost";
-      deleteBtn.addEventListener("click", () => {
-        if (confirm("Delete this customer?")) {
-          customers = customers.filter((x) => x.id !== c.id);
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Delete this customer?")) {
+          return;
+        }
+
+        try {
+          await apiSend(`/api/customers/${c.id}`, "DELETE");
           selectedIds.delete(c.id);
-          saveCustomers(customers);
-          renderCustomers();
+          await loadCustomersFromApi();
           showToast("Customer deleted");
+        } catch (err) {
+          console.error(err);
+          showToast("Failed to delete customer");
         }
       });
 

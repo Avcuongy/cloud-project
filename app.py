@@ -69,7 +69,9 @@ def create_app() -> Flask:
 
         log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
         customer_id = db.Column(
-            db.Integer, db.ForeignKey("CUSTOMERS.customer_id"), nullable=False
+            db.Integer,
+            db.ForeignKey("CUSTOMERS.customer_id", ondelete="CASCADE"),
+            nullable=False,
         )
         type = db.Column(db.Enum("SMS", "EMAIL", name="comm_type"), nullable=False)
         status = db.Column(
@@ -79,7 +81,13 @@ def create_app() -> Flask:
         message_id = db.Column(db.String(255))
         sent_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-        customer = db.relationship(Customer, backref="logs")
+        # Rely on database ON DELETE CASCADE instead of setting customer_id to NULL
+        # to avoid IntegrityError when deleting a customer that has logs.
+        customer = db.relationship(
+            Customer,
+            backref=db.backref("logs", passive_deletes=True),
+            passive_deletes=True,
+        )
 
         def to_dict(self) -> dict:
             return {
@@ -292,4 +300,10 @@ application = app  # for some AWS platforms (Elastic Beanstalk, etc.)
 
 if __name__ == "__main__":
     # For local development only. In production use gunicorn/uwsgi.
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    # On Windows, disable the reloader to avoid WinError 10038 on shutdown.
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "5000")),
+        debug=True,
+        use_reloader=False,
+    )
