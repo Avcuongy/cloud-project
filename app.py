@@ -20,9 +20,13 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def create_app() -> Flask:
+    # Disable Flask's default static route for the entire "app" folder
+    # so that template files (dashboard.html, composer.html, logs.html, ...)
+    # cannot be accessed directly as static files. We expose only specific
+    # static paths via the explicit /scripts, /styles, /assets routes below.
     app = Flask(
         __name__,
-        static_folder=os.path.join("app"),
+        static_folder=None,
         template_folder=os.path.join("app", "pages"),
     )
 
