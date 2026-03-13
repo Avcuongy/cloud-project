@@ -156,6 +156,34 @@ def create_app() -> Flask:
     def assets(filename: str):
         return send_from_directory("assets", filename)
 
+    # Simple auth guard so only logged-in users
+    # can access protected pages and APIs.
+    @app.before_request
+    def require_login():
+        endpoint = request.endpoint
+
+        # Skip checks for static files or public endpoints
+        public_endpoints = {
+            "index",
+            "login_page",
+            "api_login",
+            "api_logout",
+            "static",
+            "scripts",
+            "styles",
+            "assets",
+            "health",
+        }
+
+        if not endpoint or endpoint in public_endpoints:
+            return None
+
+        if "user_id" not in session:
+            # For API calls, return JSON 401 instead of redirect
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Unauthorized"}), 401
+            return redirect(url_for("login_page"))
+
     # API: Auth
     @app.route("/api/login", methods=["POST"])
     def api_login():
