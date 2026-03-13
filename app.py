@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -39,6 +39,8 @@ def create_app() -> Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
+    # Session sẽ tự động hết hạn sau 3 giờ không hoạt động
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=3)
 
     db = SQLAlchemy(app)
 
@@ -202,6 +204,9 @@ def create_app() -> Flask:
         if not user or user.password != password:
             return jsonify({"error": "Sai tài khoản hoặc mật khẩu"}), 401
 
+        # Đánh dấu session là "permanent" để áp dụng timeout 3 giờ
+        session.clear()
+        session.permanent = True
         session["user_id"] = user.user_id
         session["user_name"] = user.user_name
         return jsonify({"ok": True, "user": user.to_dict()})

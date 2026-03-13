@@ -54,6 +54,14 @@ function saveSelection(ids) {
   localStorage.setItem(STORAGE_KEYS.selection, JSON.stringify(ids));
 }
 
+function clearClientState() {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.selection);
+  } catch (_) {
+    // ignore storage errors
+  }
+}
+
 function activateNavByPage() {
   const currentPage = document.body.dataset.page;
   const navLinks = document.querySelectorAll(".nav-link");
@@ -62,5 +70,22 @@ function activateNavByPage() {
     link.classList.toggle("active", link.dataset.view === currentPage);
   });
 }
+async function handleLogoutClick() {
+  try {
+    await apiSend("/api/logout", "POST");
+  } catch (err) {
+    console.error(err);
+    // Dù lỗi vẫn xóa client state và chuyển về trang login
+  }
+  clearClientState();
+  window.location.href = "/login";
+}
 
-document.addEventListener("DOMContentLoaded", activateNavByPage);
+document.addEventListener("DOMContentLoaded", () => {
+  activateNavByPage();
+
+  const logoutBtn = document.getElementById("btn-logout");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogoutClick);
+  }
+});
