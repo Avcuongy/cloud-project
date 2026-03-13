@@ -2,6 +2,16 @@ CREATE DATABASE IF NOT EXISTS `customer_manager` CHARACTER SET utf8mb4 COLLATE u
 
 USE `customer_manager`;
 
+CREATE TABLE USERS (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    user_name VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),
+    email_address VARCHAR(150) NOT NULL UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
 CREATE TABLE CUSTOMERS (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,

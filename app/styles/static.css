@@ -33,6 +33,43 @@ body {
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 20px 20px 24px;
+  background-color: #ffffff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+
+.auth-header h1 {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.auth-header .panel-description {
+  margin-bottom: 12px;
+}
+
+.auth-form {
+  margin-top: 8px;
+}
+
+.auth-actions {
+  margin-top: 16px;
+  text-align: right;
+}
+
 .app-header {
   padding: 16px 24px;
   border-bottom: 1px solid #e5e7eb;
@@ -308,6 +345,7 @@ body {
 input[type="text"],
 input[type="tel"],
 input[type="email"],
+input[type="password"],
 textarea {
   width: 100%;
   padding: 8px 10px;
@@ -319,6 +357,7 @@ textarea {
 input[type="text"]:focus,
 input[type="tel"]:focus,
 input[type="email"]:focus,
+input[type="password"]:focus,
 textarea:focus {
   outline: none;
   border-color: #2563eb;

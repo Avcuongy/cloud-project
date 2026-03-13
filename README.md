@@ -1,20 +1,19 @@
-# aws
+## Domain
 
-Access: http://13.213.11.214/dashboard
+- Local: [link](http://127.0.0.1:5000/)
+- Server: [Link](http://13.213.11.214/)
 
-1. Thiết lập AWS credentials (ví dụ qua biến môi trường):
+## Sender Email
 
-   ```bash
-   setx AWS_ACCESS_KEY_ID "<your_access_key_id>"
-   setx AWS_SECRET_ACCESS_KEY "<your_secret_access_key>"
-   setx AWS_REGION "ap-southeast-1"
-   setx SES_SENDER_EMAIL "no-reply@your-domain.com"
-   setx SNS_SENDER_ID "YourBrand"
-   ```
+The system follows this priority to select the sender's email:
 
-2. Verify email và (nếu cần) domain gửi trong AWS SES.
-3. Đảm bảo tài khoản AWS ở chế độ production (không còn trong SES sandbox nếu muốn gửi đến địa chỉ tự do).
-4. Chạy ứng dụng:
-   ```bash
-   python app.py
-   ```
+1. **Logged-in User:** The email of the current user (must be AWS-verified).
+2. **First User:** If no user is logged in, use the email of the first user found in the `USERS` table.
+3. **Fallback:** If both options are unavailable, use the `SES_SENDER_EMAIL` environment variable.
+
+## Sender ID for SMS (SNS)
+
+The SenderID for AWS SNS follows this priority:
+
+1. **Username:** The `user_name` of the logged-in user (must be registered with AWS).
+2. **Fallback:** If the username is missing or empty, use the `SNS_SENDER_ID` environment variable.

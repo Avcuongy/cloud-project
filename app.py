@@ -11,6 +11,7 @@ from flask import (
     request,
     send_from_directory,
     url_for,
+    session,
 )
 from flask_sqlalchemy import SQLAlchemy
 
@@ -33,6 +34,7 @@ def create_app() -> Flask:
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
 
     db = SQLAlchemy(app)
 
@@ -43,6 +45,26 @@ def create_app() -> Flask:
 
     ses_client = boto3.client("ses", region_name=aws_region)
     sns_client = boto3.client("sns", region_name=aws_region)
+
+    class User(db.Model):  # type: ignore[misc]
+        __tablename__ = "USERS"
+
+        user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+        full_name = db.Column(db.String(255), nullable=False)
+        user_name = db.Column(db.String(100), nullable=False, unique=True)
+        password = db.Column(db.String(255), nullable=False)
+        phone_number = db.Column(db.String(20))
+        email_address = db.Column(db.String(150), nullable=False, unique=True)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+        def to_dict(self) -> dict:
+            return {
+                "id": self.user_id,
+                "fullName": self.full_name,
+                "userName": self.user_name,
+                "email": self.email_address,
+                "createdAt": (self.created_at or datetime.utcnow()).isoformat(),
+            }
 
     class Customer(db.Model):  # type: ignore[misc]
         __tablename__ = "CUSTOMERS"
@@ -101,10 +123,13 @@ def create_app() -> Flask:
             }
 
     # Routes to serve pages
-
     @app.route("/")
     def index():
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("login_page"))
+
+    @app.route("/login")
+    def login_page():
+        return render_template("login.html")
 
     @app.route("/dashboard")
     def dashboard():
@@ -130,6 +155,29 @@ def create_app() -> Flask:
     @app.route("/assets/<path:filename>")
     def assets(filename: str):
         return send_from_directory("assets", filename)
+
+    # API: Auth
+    @app.route("/api/login", methods=["POST"])
+    def api_login():
+        payload = request.get_json(force=True) or {}
+        username = (payload.get("userName") or payload.get("username") or "").strip()
+        password = (payload.get("password") or "").strip()
+
+        if not username or not password:
+            return jsonify({"error": "userName and password are required"}), 400
+
+        user = User.query.filter_by(user_name=username).first()
+        if not user or user.password != password:
+            return jsonify({"error": "Sai tài khoản hoặc mật khẩu"}), 401
+
+        session["user_id"] = user.user_id
+        session["user_name"] = user.user_name
+        return jsonify({"ok": True, "user": user.to_dict()})
+
+    @app.route("/api/logout", methods=["POST"])
+    def api_logout():
+        session.clear()
+        return jsonify({"ok": True})
 
     # API: Customers
     @app.route("/api/customers", methods=["GET"])
@@ -176,6 +224,48 @@ def create_app() -> Flask:
         db.session.commit()
         return "", 204
 
+    def get_sender_email() -> str | None:
+        """Return base sender email.
+
+        Ưu tiên:
+        1. Email của user đang đăng nhập (session.user_id).
+        2. Email của user đầu tiên trong bảng USERS.
+        3. Biến môi trường SES_SENDER_EMAIL (nếu có).
+        """
+
+        # 1. User hiện đang đăng nhập
+        user_id = session.get("user_id")
+        if user_id:
+            user = User.query.get(user_id)
+            if user and user.email_address:
+                return user.email_address
+
+        # 2. Bất kỳ user nào trong hệ thống (lấy user đầu tiên)
+        user = User.query.order_by(User.user_id.asc()).first()
+        if user and user.email_address:
+            return user.email_address
+
+        # 3. Fallback về biến môi trường
+        return ses_sender
+
+    def get_sms_sender_id() -> str:
+        """Return SMS SenderID for AWS SNS.
+
+        Ưu tiên:
+        1. user_name của user đang đăng nhập (lọc ký tự chữ/số, tối đa 11 ký tự).
+        2. Biến môi trường SNS_SENDER_ID cấu hình ban đầu.
+        """
+
+        user_id = session.get("user_id")
+        if user_id:
+            user = User.query.get(user_id)
+            if user and getattr(user, "user_name", None):
+                raw = "".join(ch for ch in user.user_name if ch.isalnum())
+                if raw:
+                    return raw[:11]
+
+        return sns_sender_id
+
     # API: Logs
     @app.route("/api/logs", methods=["GET"])
     def list_logs():
@@ -206,14 +296,15 @@ def create_app() -> Flask:
             Nội dung và tiêu đề được gửi với charset UTF-8
             để hỗ trợ tiếng Việt.
             """
-            if not ses_sender or not customer.email_address:
+            sender_email = get_sender_email()
+            if not sender_email or not customer.email_address:
                 # Fallback: mark as failed when SES or email is not configured
                 fake_id = f"EMAIL-{int(now.timestamp())}-{customer.customer_id}"
                 return "Failed", fake_id
 
             try:
                 response = ses_client.send_email(
-                    Source=ses_sender,
+                    Source=sender_email,
                     Destination={"ToAddresses": [customer.email_address]},
                     Message={
                         "Subject": {
@@ -241,10 +332,11 @@ def create_app() -> Flask:
                 return "Failed", fake_id
 
             try:
+                sender_id = get_sms_sender_id()
                 attributes = {
                     "AWS.SNS.SMS.SenderID": {
                         "DataType": "String",
-                        "StringValue": sns_sender_id,
+                        "StringValue": sender_id,
                     },
                 }
                 response = sns_client.publish(
