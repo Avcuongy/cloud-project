@@ -21,9 +21,6 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def create_app() -> Flask:
     # Disable Flask's default static route for the entire "app" folder
-    # so that template files (dashboard.html, composer.html, logs.html, ...)
-    # cannot be accessed directly as static files. We expose only specific
-    # static paths via the explicit /scripts, /styles, /assets routes below.
     app = Flask(
         __name__,
         static_folder=None,
@@ -33,8 +30,6 @@ def create_app() -> Flask:
     # Database configuration
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        # Không còn fallback vào RDS với user/pass thật để tránh lộ thông tin.
-        # Khi chạy thực tế bắt buộc phải set biến môi trường DATABASE_URL.
         raise RuntimeError(
             "DATABASE_URL environment variable is required but not set. "
             "Vui lòng cấu hình chuỗi kết nối MySQL qua biến môi trường."
@@ -43,12 +38,12 @@ def create_app() -> Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
-    # Session sẽ tự động hết hạn sau 3 giờ không hoạt động
+    # Session auto-expire after 3 hours of inactivity
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=3)
 
     db = SQLAlchemy(app)
 
-    # AWS clients (optional)F
+    # AWS clients (optional)
     aws_region = os.getenv("AWS_REGION", "ap-southeast-1")
     ses_sender = os.getenv("SES_SENDER_EMAIL")
     sns_sender_id = os.getenv("SNS_SENDER_ID", "CloudApp")
@@ -167,7 +162,6 @@ def create_app() -> Flask:
         return send_from_directory("assets", filename)
 
     # Simple auth guard so only logged-in users
-    # can access protected pages and APIs.
     @app.before_request
     def require_login():
         endpoint = request.endpoint
@@ -208,7 +202,7 @@ def create_app() -> Flask:
         if not user or user.password != password:
             return jsonify({"error": "Sai tài khoản hoặc mật khẩu"}), 401
 
-        # Đánh dấu session là "permanent" để áp dụng timeout 3 giờ
+        # Clear session to prevent fixation, then set new session data
         session.clear()
         session.permanent = True
         session["user_id"] = user.user_id
@@ -268,33 +262,33 @@ def create_app() -> Flask:
     def get_sender_email() -> str | None:
         """Return base sender email.
 
-        Ưu tiên:
-        1. Email của user đang đăng nhập (session.user_id).
-        2. Email của user đầu tiên trong bảng USERS.
-        3. Biến môi trường SES_SENDER_EMAIL (nếu có).
+        Priority:
+        1. Email by user currently logged in (if any).
+        2. Any user in the system (take the first one).
+        3. Fallback to SES_SENDER_EMAIL environment variable.
         """
 
-        # 1. User hiện đang đăng nhập
+        # 1.
         user_id = session.get("user_id")
         if user_id:
             user = User.query.get(user_id)
             if user and user.email_address:
                 return user.email_address
 
-        # 2. Bất kỳ user nào trong hệ thống (lấy user đầu tiên)
+        # 2.
         user = User.query.order_by(User.user_id.asc()).first()
         if user and user.email_address:
             return user.email_address
 
-        # 3. Fallback về biến môi trường
+        # 3.
         return ses_sender
 
     def get_sms_sender_id() -> str:
         """Return SMS SenderID for AWS SNS.
 
-        Ưu tiên:
-        1. user_name của user đang đăng nhập (lọc ký tự chữ/số, tối đa 11 ký tự).
-        2. Biến môi trường SNS_SENDER_ID cấu hình ban đầu.
+        Priority:
+        1. User name of the currently logged-in user (if any).
+        2. Fallback to SNS_SENDER_ID environment variable (default "CloudApp").
         """
 
         user_id = session.get("user_id")
@@ -334,8 +328,6 @@ def create_app() -> Flask:
         def send_email(customer: Customer) -> tuple[str, str]:
             """
             Send email via AWS SES. Returns (status, message_id).
-            Nội dung và tiêu đề được gửi với charset UTF-8
-            để hỗ trợ tiếng Việt.
             """
             sender_email = get_sender_email()
             if not sender_email or not customer.email_address:
@@ -428,12 +420,10 @@ def create_app() -> Flask:
 
 
 app = create_app()
-application = app  # for some AWS platforms (Elastic Beanstalk, etc.)
+application = app
 
 
 if __name__ == "__main__":
-    # For local development only. In production use gunicorn/uwsgi.
-    # On Windows, disable the reloader to avoid WinError 10038 on shutdown.
     app.run(
         host="0.0.0.0",
         port=int(os.getenv("PORT", "5000")),

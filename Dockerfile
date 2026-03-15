@@ -1,11 +1,11 @@
-# Production image for Flask app
+# Python 3.11 slim image as base
 FROM python:3.11-slim
 
-# Set environment variables to prevent Python from writing .pyc files and to ensure output is sent straight away
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Workdir inside container
+# Workdir
 WORKDIR /app
 
 # System dependencies
@@ -13,14 +13,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Python dependencies
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project source
 COPY . .
 
-# Default environment for production
+# Default environment
 ENV FLASK_ENV=production \
     PORT=5000
 
