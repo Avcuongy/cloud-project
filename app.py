@@ -33,8 +33,12 @@ def create_app() -> Flask:
     # Database configuration
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        # Fallback to local MySQL on default port; adjust via env when deploying
-        db_url = "mysql+pymysql://admin:12345678@database.clqawmkceblg.ap-southeast-1.rds.amazonaws.com:3306/customer_manager"
+        # Không còn fallback vào RDS với user/pass thật để tránh lộ thông tin.
+        # Khi chạy thực tế bắt buộc phải set biến môi trường DATABASE_URL.
+        raise RuntimeError(
+            "DATABASE_URL environment variable is required but not set. "
+            "Vui lòng cấu hình chuỗi kết nối MySQL qua biến môi trường."
+        )
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
